@@ -1,0 +1,26 @@
+<!-- <meta charset="UTF-8"> -->
+<!doctype html>
+<html>
+  <head>
+    <title>Web Push Notification Sample</title>
+    <link rel="icon" href="./favicon.ico">
+    <link rel="manifest" href="./manifest.json">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+  </head>
+  <body>
+    <script>
+    window.onload = () => {
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker
+         .register('sw.js', { scope: './'})
+      } else {
+    	  alert("navigator.serviceWorker does not exist.")
+      }
+    }
+    </script>
+    <script src="wpn.js"></script>
+    Hello
+    <button onclick="subscribe()">subscribe</button>
+    <button onclick="push()">push</button>
+  </body>
+</html>

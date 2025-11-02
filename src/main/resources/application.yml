@@ -1,0 +1,28 @@
+wpn:
+  vapid-public-key: BBXQhYqsykpr06INnyIYupAL6jM2bk1xULbV9wTHukzV6LyNQ8I5XtHTE-mLaSYRWoruDJ9W9hjXgDKX1i_xDFM
+  vapid-private-key: HXg4r2uW17Nu0prbJmAWlpLBlpVAG9AkiSxwjq6UM-0
+
+server:
+  servlet:
+    context-path: /wpn
+    session:
+      cookie:
+        path: /wpn
+  port: 8080
+
+spring:
+  mvc:
+    dispatch-options-request: true
+  jackson:
+    #default-property-inclusion: NON_NULL
+    mapper:
+      sort-properties-alphabetically: false
+    serialization:
+      indent:
+        output: true
+      order-map-entries-by-keys: false
+    debug: true
+logging:
+  level:
+    org:
+      springframework:
