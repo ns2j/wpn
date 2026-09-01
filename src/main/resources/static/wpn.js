@@ -28,14 +28,25 @@ subscribe = async () => {
   console.log(publicKeyJson)
   const vapidPublicKey = urlBase64ToUint8Array(publicKeyJson.publicKey)
   console.log(vapidPublicKey)
+  let subscription = await registration.pushManager.getSubscription();
+
+  if (subscription) {
+    await subscription.unsubscribe();
+    console.log("deleted old subscripttion")
+  }
   try {
-    const subscription = await registration.pushManager.subscribe({
-	       userVisibleOnly: true,
-	       applicationServerKey: vapidPublicKey
-	  })
-	  if (!subscription)
-		  return
+    subscription = await registration.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: vapidPublicKey
+    })
+    if (!subscription)
+      return
     console.log(subscription)
+  } catch (e) {
+    console.log(e)
+    return
+  }
+  try {
     fetch('./api/register', {
       method: 'post',
       headers: {
