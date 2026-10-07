@@ -1,7 +1,6 @@
 package wpn;
 
 import java.nio.charset.StandardCharsets;
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -52,12 +51,12 @@ public class ApiController {
     
     @PostMapping("/register")
     public void registerSubsciption(@RequestBody Subscription sub) {
-        logger.info("" + sub);
+        //logger.info("" + sub);
         repo.add(sub);
     }
     
     @PostMapping("/push")
-    public void sendPush() throws UnsupportedEncodingException {
+    public void sendPush() {
         byte[] payload = """
         {
             "title": "Web Push Notification test",
