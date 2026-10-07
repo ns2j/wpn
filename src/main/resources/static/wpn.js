@@ -21,7 +21,6 @@ subscribe = async () => {
   }
     	  
   const registration = await navigator.serviceWorker.ready
-  const sub = await registration.pushManager.getSubscription()
   const response = await fetch('./api/publickey')
   console.log(response)
   const publicKeyJson = await response.json()
