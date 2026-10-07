@@ -26,7 +26,7 @@ public class Push {
 
             HttpResponse response = pushService.send(notification, Encoding.AES128GCM);
             logger.info(endpoint);
-            logger.info(authenticationSecret);
+            //logger.info(authenticationSecret);
             logger.info("" + response.getStatusLine());
             logger.info("" + response.getEntity());
             logger.info(EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8));

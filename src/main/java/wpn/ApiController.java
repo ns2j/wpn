@@ -1,5 +1,6 @@
 package wpn;
 
+import java.nio.charset.StandardCharsets;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
@@ -44,7 +45,7 @@ public class ApiController {
     
     record Subscription(
             String endpoint,
-            String expireationTime,
+            String expirationTime,
             Keys keys) {}
     
     List<Subscription> repo = new ArrayList<>();
@@ -58,28 +59,24 @@ public class ApiController {
     @PostMapping("/push")
     public void sendPush() throws UnsupportedEncodingException {
         byte[] payload = """
-      {
-          "title": "Web Push Notification test",
-          "body": "Hello world!",
-          "vibrate": [100, 50, 100]
-      }                        
-                        """.getBytes("UTF-8");
-  
+        {
+            "title": "Web Push Notification test",
+            "body": "Hello world!",
+            "icon": "./icon-192x192.png",
+            "badge": "./icon-192x192.png",
+            "vibrate": [100, 50, 100]
+        }
+        """.getBytes(StandardCharsets.UTF_8);
+
         Push push = new Push(pushService);
-        List<Subscription> removing = new ArrayList<Subscription>();
-        repo.forEach(sub -> {
-            int code = push.sendPush(sub.endpoint(),
-                    sub.keys().p256dh(), 
-                    sub.keys().auth(), payload);
-            if (code >= 400 && code < 500) {
-                repo.stream()
-                .filter(r -> r.endpoint().equals(sub.endpoint()))
-                .forEach(r -> removing.add(r));
-            }
+
+        repo.removeIf(sub -> {
+            int code = push.sendPush(
+                sub.endpoint(),
+                sub.keys().p256dh(),
+                sub.keys().auth(),
+                payload);
+            return code >= 400 && code < 500;
         });
-        for (Subscription r: removing)
-            repo.remove(r);
-        
-    }
-    
+    } 
 }
