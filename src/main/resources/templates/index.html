@@ -1,26 +1,62 @@
-<!-- <meta charset="UTF-8"> -->
 <!doctype html>
-<html>
-  <head>
-    <title>Web Push Notification Sample</title>
-    <link rel="icon" href="./favicon.ico">
-    <link rel="manifest" href="./manifest.json">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-  </head>
-  <body>
-    <script>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Web Push Notification Sample</title>
+  <link rel="icon" href="./favicon.ico">
+  <link rel="manifest" href="./manifest.json">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body {
+      font-family: sans-serif;
+      max-width: 480px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+    }
+    button {
+      margin: 0.5rem 0.5rem 0.5rem 0;
+      padding: 0.6rem 1.2rem;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+    #status {
+      margin-top: 1rem;
+      min-height: 1.5em;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h1>Web Push Sample</h1>
+  <p>
+    1. Click "Subscribe" and allow notifications<br>
+    2. Click "Send Push" to receive a notification
+  </p>
+
+  <button onclick="subscribe()">Subscribe</button>
+  <button onclick="push()">Send Push</button>
+
+  <div id="status"></div>
+
+  <script>
     window.onload = () => {
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker
-         .register('sw.js', { scope: './'})
+          .register('sw.js', { scope: './' })
+          .then(() => console.log('Service Worker registered'))
+          .catch(e => {
+            console.error(e);
+            document.getElementById('status').textContent =
+              'Failed to register Service Worker: ' + e.message;
+            document.getElementById('status').style.color = '#c00';
+          });
       } else {
-    	  alert("navigator.serviceWorker does not exist.")
+        document.getElementById('status').textContent =
+          'This browser does not support Service Worker';
+        document.getElementById('status').style.color = '#c00';
       }
     }
-    </script>
-    <script src="wpn.js"></script>
-    Hello
-    <button onclick="subscribe()">subscribe</button>
-    <button onclick="push()">push</button>
-  </body>
+  </script>
+  <script src="wpn.js"></script>
+</body>
 </html>

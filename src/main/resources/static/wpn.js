@@ -3,68 +3,99 @@ urlBase64ToUint8Array = (base64String) => {
   const base64 = (base64String + padding)
     .replace(/\-/g, '+')
     .replace(/_/g, '/');
-    	 
+
   const rawData = window.atob(base64);
   const outputArray = new Uint8Array(rawData.length);
-    	 
+
   for (let i = 0; i < rawData.length; ++i) {
     outputArray[i] = rawData.charCodeAt(i);
   }
   return outputArray;
 }
- 
-subscribe = async () => {
-  console.log("subscribe")
-  if (!('serviceWorker' in navigator)) {
-    alert("navigator.serviceWorker does not exist.")
-    return
-  }
-    	  
-  const registration = await navigator.serviceWorker.ready
-  const response = await fetch('./api/publickey')
-  console.log(response)
-  const publicKeyJson = await response.json()
-  console.log(publicKeyJson)
-  const vapidPublicKey = urlBase64ToUint8Array(publicKeyJson.publicKey)
-  console.log(vapidPublicKey)
-  let subscription = await registration.pushManager.getSubscription();
 
-  if (subscription) {
-    await subscription.unsubscribe();
-    console.log("deleted old subscripttion")
+const setStatus = (message, isError = false) => {
+  const el = document.getElementById('status');
+  if (!el) {
+    if (isError) {
+      alert(message);
+    }
+    return;
   }
+  el.textContent = message;
+  el.style.color = isError ? '#c00' : '#080';
+}
+
+subscribe = async () => {
+  setStatus('Subscribing...');
+
   try {
+    if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+      throw new Error('This browser does not support Web Push');
+    }
+
+    const registration = await navigator.serviceWorker.ready;
+
+    // Unsubscribe existing subscription if any
+    let subscription = await registration.pushManager.getSubscription();
+    if (subscription) {
+      await subscription.unsubscribe();
+      console.log('Unsubscribed old subscription');
+    }
+
+    // Fetch VAPID public key
+    const response = await fetch('./api/publickey');
+    if (!response.ok) {
+      throw new Error('Failed to get public key (' + response.status + ')');
+    }
+    const publicKeyJson = await response.json();
+    const vapidPublicKey = urlBase64ToUint8Array(publicKeyJson.publicKey);
+
+    // Create new subscription
     subscription = await registration.pushManager.subscribe({
-            userVisibleOnly: true,
-            applicationServerKey: vapidPublicKey
-    })
-    if (!subscription)
-      return
-    console.log(subscription)
-  } catch (e) {
-    console.log(e)
-    return
-  }
-  try {
-    fetch('./api/register', {
-      method: 'post',
-      headers: {
-        'Content-type': 'application/json'
-      },
+      userVisibleOnly: true,
+      applicationServerKey: vapidPublicKey
+    });
+
+    if (!subscription) {
+      throw new Error('Failed to create subscription');
+    }
+
+    // Register subscription on the server
+    const registerRes = await fetch('./api/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(subscription)
-    })
+    });
+
+    if (!registerRes.ok) {
+      throw new Error('Failed to register subscription (' + registerRes.status + ')');
+    }
+
+    console.log(subscription);
+    setStatus('Subscribed successfully');
+
   } catch (e) {
-    console.log(e)
+    console.error(e);
+    setStatus('Subscription failed: ' + e.message, true);
   }
 }
-    
-push = () => {
-  fetch('./api/push', {
-         method: 'post',
-         headers: {
-           'Content-type': 'application/json'
-         },
-         body: {}
-  })
-    	   
+
+push = async () => {
+  setStatus('Sending push...');
+
+  try {
+    const res = await fetch('./api/push', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' }
+    });
+
+    if (!res.ok) {
+      throw new Error('Failed to send push (' + res.status + ')');
+    }
+
+    setStatus('Push sent successfully');
+  } catch (e) {
+    console.error(e);
+    setStatus('Push failed: ' + e.message, true);
+  }
 }
